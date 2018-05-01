@@ -66,6 +66,7 @@ class ArticleHandler(ContentHandler):
             h.set_field('text', s.strip())
             lang = langid.classify(s)
             h.set_field('language', lang[0])
+            h.set_field('filename', filename)
             saxparser.close() 
         except Exception as e:
             print(filename, ':',  e) 

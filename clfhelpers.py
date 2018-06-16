@@ -5,6 +5,7 @@ import logging
 import matplotlib.pyplot as plt
 from sklearn.metrics.pairwise import pairwise_distances
 import numpy as np
+import datetime
 
 
 def show_top_features(vectorizer, clf, i_label, n=20, joiner = '\n'):
@@ -47,12 +48,18 @@ def print_clf_classes_distances(clf, metric = 'manhattan', num_format = '{0:.4f}
         print(labels[i].ljust(w), ' '.join(['{0:.4f}'.format(x).ljust(w) for x in m[i] ]))
 
 
-def plot_clf_classes_distances(clf, metric = 'manhattan', num_format = '{0:.4f}'):
+def plot_clf_classes_distances(clf, metric = 'manhattan', num_format = '{0:.4f}', normalization=None):
     '''
     Shows a table with with distances between classifier clf features for each category as a heatmap using matshow
+    normalization: {'sum', 'max', 'dim', None}
     '''
     m = pairwise_distances(clf.coef_, metric = metric)
-    m = m / np.max(m)
+    if normalization == 'max':
+        m = m / np.max(m) # by sum TODO
+    elif normalization == 'sum':
+        m = m / np.sum(m)
+    elif normalization == 'dim':
+        m = 0.5 * m / clf.coef_.shape[1]        
     labels = clf.classes_
     fig, ax = plt.subplots()
     cax = ax.matshow(m, aspect="auto")
@@ -65,3 +72,19 @@ def plot_clf_classes_distances(clf, metric = 'manhattan', num_format = '{0:.4f}'
             c = m[j,i]
             ax.text(i, j, num_format.format(c), va='center', ha='center')
     plt.show()
+
+def plot_history(history, filename = None):
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model train vs validation loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper right')
+    if filename:
+        plt.savefig(filename, dpi=80)
+    plt.show()
+
+
+def datetime_stamp():
+    now = datetime.datetime.now()
+    return '{}{:02d}{:02d}_{:02d}{:02d}{:02d}'.format(now.year, now.month, now.day, now.hour, now.minute, now.second)
